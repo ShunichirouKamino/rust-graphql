@@ -8,7 +8,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/hello_world/src/main",
+            "program": "${workspaceFolder}/guessing_game/src/main",
             "args": [],
             "cwd": "${workspaceFolder}"
         }
