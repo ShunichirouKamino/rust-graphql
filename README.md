@@ -26,3 +26,7 @@ Hello, world!
 ```
 
 - `$ cargo run`
+
+## GraphQL
+
+`$ cargo init --bin graph-ql`
