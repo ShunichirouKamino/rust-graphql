@@ -1,5 +1,5 @@
 [package]
-name = "graph-ql"
+name = "graph_ql"
 version = "0.1.0"
 authors = ["ShunichirouKamino <kamino.shunichirou@isid.co.jp>"]
 edition = "2018"
