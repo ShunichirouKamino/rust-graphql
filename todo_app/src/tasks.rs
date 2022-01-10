@@ -59,11 +59,13 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
         .write(true)
         .open(journal_path)?;
 
-    let tasks = match serde_json::from_reader(file) {
-        Ok(tasks) => tasks,
-        Err(e) if e.is_eof() => Vec::new(),
-        Err(e) => Err(e)?,
-    };
+    // let tasks = match serde_json::from_reader(file) {
+    //     Ok(tasks) => tasks,
+    //     Err(e) if e.is_eof() => Vec::new(),
+    //     Err(e) => Err(e)?,
+    // };
+
+    let tasks = collect_tasks(&file)?;
 
     if task_postion == 0 || task_postion > tasks.len() {
         return Err(Error::new(ErroKind::InvalidInput, "Invalid Task ID"));
@@ -78,3 +80,24 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
 }
 
 //pub fn list_tasks(journal_path: PathBuf) -> Result<()> { ... }
+
+/// # タスク抽出処理
+///
+/// ファイルをインプットとし、タスク定義に変換して返却する。
+///
+/// - ファイルポインタを最初に巻き戻し
+/// - ファイル内容の読み取り、Taskのベクタに変換
+/// - 再度ファイルポインタを最初に巻き戻し
+///
+fn collect_tasks(mut file: &File) -> Result<Vec<Task>> {
+    // rewind the file before.
+    file.seek(SeekFrom::Start(0))?;
+    let tasks = match serde_json::from_reader(file) {
+        Ok(tasks) => tasks,
+        Err(e) if e.is_eof() => Vec::new(),
+        Err(e) => Err(e)?,
+    };
+    // rewind the file after.
+    file.seek(SeekFrom::Start(0))?;
+    Ok(tasks);
+}
