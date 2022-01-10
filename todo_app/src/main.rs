@@ -8,5 +8,5 @@ use structopt::StructOpt;
 ///
 /// メインエントリです。
 fn main() {
-    cli::CommandLineArgs::from_args();
+    println!("{:#?}", cli::CommandLineArgs::from_args());
 }
