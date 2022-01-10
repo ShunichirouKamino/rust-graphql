@@ -2,6 +2,7 @@
 //!
 
 mod cli;
+mod tasks;
 use structopt::StructOpt;
 
 /// # 関数に付与するコメントです。

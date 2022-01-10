@@ -2,8 +2,9 @@ use chrono::{serde::ts_seconds, DateTime, Local, Utc};
 use serde::Deserialize;
 use serde::Serialize;
 
-use std::fs::OpenOperations;
-use std::io::{BufReader, Result, Seek, SeekFrom};
+use std::fs::File;
+use std::fs::OpenOptions;
+use std::io::{BufReader, Error, ErrorKind, Result, Seek, SeekFrom};
 use std::path::PathBuf;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -27,7 +28,7 @@ impl Task {
 /// - タスクの追加
 ///
 pub fn add_task(journal_path: PathBuf, task: Task) -> Result<()> {
-    let mut file = OptnOptions::new()
+    let mut file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
@@ -67,8 +68,8 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
 
     let tasks = collect_tasks(&file)?;
 
-    if task_postion == 0 || task_postion > tasks.len() {
-        return Err(Error::new(ErroKind::InvalidInput, "Invalid Task ID"));
+    if task_position == 0 || task_position > tasks.len() {
+        return Err(Error::new(ErrorKind::InvalidInput, "Invalid Task ID"));
     }
     tasks.remove(task_position - 1);
 
