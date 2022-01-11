@@ -2,6 +2,7 @@ use chrono::{serde::ts_seconds, DateTime, Local, Utc};
 use serde::Deserialize;
 use serde::Serialize;
 
+use std::fmt;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::{BufReader, Error, ErrorKind, Result, Seek, SeekFrom};
@@ -19,6 +20,18 @@ impl Task {
     pub fn new(text: String) -> Task {
         let created_at: DateTime<Utc> = Utc::now();
         Task { text, created_at }
+    }
+}
+
+/// # Taskのフォーマッタ定義
+///
+/// - created_atに対して、TaskのUtc型DateTimeからLocal型Datetimeに変換
+/// - フォーマッタfに対して、タスクテキストと変換後のcreated_atを定義
+///
+impl fmt::Display for Task {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let created_at = self.created_at.with_timezone(&Local).format("%F %H:%M");
+        write!(f, "{:<50} [{}]", self.text, created_at)
     }
 }
 
