@@ -66,14 +66,13 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
     //     Err(e) => Err(e)?,
     // };
 
-    let tasks = collect_tasks(&file)?;
+    let mut tasks = collect_tasks(&file)?;
 
     if task_position == 0 || task_position > tasks.len() {
         return Err(Error::new(ErrorKind::InvalidInput, "Invalid Task ID"));
     }
     tasks.remove(task_position - 1);
 
-    file.seek(SeekFrom::Start(0))?;
     file.set_len(0)?;
 
     serde_json::to_writer(file, &tasks)?;
@@ -100,5 +99,5 @@ fn collect_tasks(mut file: &File) -> Result<Vec<Task>> {
     };
     // rewind the file after.
     file.seek(SeekFrom::Start(0))?;
-    Ok(tasks);
+    Ok(tasks)
 }
