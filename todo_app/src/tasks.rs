@@ -79,7 +79,22 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
     Ok(())
 }
 
-//pub fn list_tasks(journal_path: PathBuf) -> Result<()> { ... }
+pub fn list_tasks(journal_path: PathBuf) -> Result<()> {
+    let file = OpenOptions::new().read(true).open(journal_path)?;
+    let tasks = collect_tasks(&file)?;
+
+    if tasks.is_empty() {
+        println!("Task list is empty!");
+    } else {
+        let mut order: u32 = 1;
+        for task in tasks {
+            println!("{}: {}", order, task);
+            order += 1;
+        }
+    }
+
+    Ok(())
+}
 
 /// # タスク抽出処理
 ///
