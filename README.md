@@ -30,3 +30,18 @@ Hello, world!
 ## GraphQL
 
 `$ cargo init --bin graph-ql`
+
+## Remote Container
+
+**Admin**
+
+- Open command palette
+  - `Remote-Containes: Add Development Container Configuration Files...`
+  - `Rust`
+  - `buster`
+    - [x] GitHub CLI
+
+**Developers**
+
+- Open a Remote Window
+  - Reopen in Container
