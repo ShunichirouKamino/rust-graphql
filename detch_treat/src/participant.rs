@@ -2,6 +2,7 @@ use chrono::{serde::ts_seconds, DateTime, Local, Utc};
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::validation::validationStrategy;
 use std::fmt;
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -61,13 +62,13 @@ pub fn add_participant(journal_path: PathBuf, participant: Participant) -> Resul
     Ok(())
 }
 
-/// # タスクの完了（削除）を行う
+/// # 年次の加算をおこなう
 ///
 /// - jsonで定義されたファイルの読み込み
-/// - タスクの完了（削除）
+/// - 全員の年次を引数分加算
 /// - 指定したtask_postionが0またはファイルサイズを超えた場合はエラー
 ///
-pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> {
+pub fn increment(journal_path: PathBuf, years: u8) -> Result<()> {
     let file = OpenOptions::new()
         .read(true)
         .write(true)
@@ -75,18 +76,18 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
 
     let mut tasks = collect_tasks(&file)?;
 
-    if task_position == 0 || task_position > tasks.len() {
-        return Err(Error::new(ErrorKind::InvalidInput, "Invalid Task ID"));
-    }
-    tasks.remove(task_position - 1);
+    // if task_position == 0 || task_position > tasks.len() {
+    //     return Err(Error::new(ErrorKind::InvalidInput, "Invalid Task ID"));
+    // }
+    // tasks.remove(task_position - 1);
 
-    file.set_len(0)?;
+    // file.set_len(0)?;
 
     serde_json::to_writer(file, &tasks)?;
     Ok(())
 }
 
-pub fn list_tasks(journal_path: PathBuf) -> Result<()> {
+pub fn calc(journal_path: PathBuf) -> Result<()> {
     let file = OpenOptions::new().read(true).open(journal_path)?;
     let tasks = collect_tasks(&file)?;
 

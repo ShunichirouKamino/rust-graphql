@@ -17,13 +17,13 @@ pub enum Action {
         #[structopt()]
         years: u8,
     },
-    /// Remove an entry from the journal file by position.
-    Done {
+    /// Increment everyone's service of years.
+    Increment {
         #[structopt()]
-        position: usize,
+        years: u8,
     },
-    /// List all tasks in the journal file.
-    List,
+    /// Calculate the amount.
+    Calc,
 }
 
 /// # コマンドライン引数を読み取る構造体

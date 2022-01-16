@@ -3,6 +3,7 @@
 
 mod cli;
 mod participant;
+mod validation;
 
 use anyhow::anyhow;
 use cli::{Action::*, CommandLineArgs};
@@ -27,8 +28,8 @@ fn main() -> anyhow::Result<()> {
         Add { name, years } => {
             participant::add_participant(journal_file, Participant::new(name, years))
         }
-        List => participant::list_tasks(journal_file),
-        Done { position } => participant::complete_task(journal_file, position),
+        Increment { years } => participant::increment(journal_file, years),
+        Calc {} => participant::calc(journal_file),
     }?;
     Ok(())
 }
