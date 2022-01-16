@@ -20,3 +20,7 @@ version = "0.4"
 features = [
     "serde",
 ] # We're also going to need the serde feature for the chrono crate, so we can serialize the DateTime field.
+
+[dependencies.validator]
+version = "0.14.0"
+features = ["derive"]

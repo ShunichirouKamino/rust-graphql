@@ -2,7 +2,6 @@ use chrono::{serde::ts_seconds, DateTime, Local, Utc};
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::validation::validationStrategy;
 use std::fmt;
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -68,7 +67,7 @@ pub fn add_participant(journal_path: PathBuf, participant: Participant) -> Resul
 /// - 全員の年次を引数分加算
 /// - 指定したtask_postionが0またはファイルサイズを超えた場合はエラー
 ///
-pub fn increment(journal_path: PathBuf, years: u8) -> Result<()> {
+pub fn increment(journal_path: PathBuf, years: i8) -> Result<()> {
     let file = OpenOptions::new()
         .read(true)
         .write(true)

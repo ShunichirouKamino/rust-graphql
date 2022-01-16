@@ -3,10 +3,9 @@
 
 mod cli;
 mod participant;
-mod validation;
 
 use anyhow::anyhow;
-use cli::{Action::*, CommandLineArgs};
+use cli::{Action::*, CommandLineArgs, InputIncrement, InputParticipant};
 use participant::Participant;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -25,10 +24,10 @@ fn main() -> anyhow::Result<()> {
         .ok_or(anyhow!("Failed to find journal file."))?;
 
     match action {
-        Add { name, years } => {
+        Add(InputParticipant { name, years }) => {
             participant::add_participant(journal_file, Participant::new(name, years))
         }
-        Increment { years } => participant::increment(journal_file, years),
+        Increment(InputIncrement { years }) => participant::increment(journal_file, years),
         Calc {} => participant::calc(journal_file),
     }?;
     Ok(())

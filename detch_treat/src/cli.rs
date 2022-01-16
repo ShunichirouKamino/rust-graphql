@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
+use validator::{Validate, ValidationError};
 
 /// # Actionの直和型
 ///
@@ -9,21 +10,27 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 pub enum Action {
     /// Write a perticipant to the journal file.
-    Add {
-        /// The task description text.
-        #[structopt()]
-        name: String,
-
-        #[structopt()]
-        years: u8,
-    },
+    Add(InputParticipant),
     /// Increment everyone's service of years.
-    Increment {
-        #[structopt()]
-        years: u8,
-    },
+    Increment(InputIncrement),
     /// Calculate the amount.
     Calc,
+}
+
+#[derive(Validate, StructOpt, Debug)]
+pub struct InputParticipant {
+    #[structopt()]
+    pub name: String,
+
+    #[structopt()]
+    #[validate(range(min = 0, max = 100))]
+    pub years: u8,
+}
+
+#[derive(Validate, StructOpt, Debug)]
+pub struct InputIncrement {
+    #[structopt()]
+    pub years: i8,
 }
 
 /// # コマンドライン引数を読み取る構造体
