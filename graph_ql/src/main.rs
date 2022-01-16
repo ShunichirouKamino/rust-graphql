@@ -28,6 +28,7 @@ async fn index_playground() -> Result<HttpResponse> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    todo!();
     let schema = Schema::build(Query, EmptyMutation, EmptySubscription).finish();
 
     println!("Playground: http://localhost:8000");
@@ -35,7 +36,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(schema.clone()))
-            .service(web::resource("/").guard(guard::Post()).to(index))
+            //.service(web::resource("/").guard(guard::Post()).to(index))
             .service(web::resource("/").guard(guard::Get()).to(index_playground))
     })
     .bind("127.0.0.1:8000")?
