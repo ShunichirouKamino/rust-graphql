@@ -2,13 +2,13 @@
 //!
 
 mod cli;
-mod tasks;
+mod participant;
 
 use anyhow::anyhow;
 use cli::{Action::*, CommandLineArgs};
+use participant::Participant;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use tasks::Task;
 
 /// # 関数に付与するコメントです。
 ///
@@ -24,10 +24,11 @@ fn main() -> anyhow::Result<()> {
         .ok_or(anyhow!("Failed to find journal file."))?;
 
     match action {
-        Add { name, years } => println!("{}, {}", name, years),
-        // Add { text } => tasks::add_task(journal_file, Task::new(text)),
-        // List => tasks::list_tasks(journal_file),
-        // Done { position } => tasks::complete_task(journal_file, position),
+        Add { name, years } => {
+            participant::add_participant(journal_file, Participant::new(name, years))
+        }
+        List => participant::list_tasks(journal_file),
+        Done { position } => participant::complete_task(journal_file, position),
     }?;
     Ok(())
 }

@@ -8,17 +8,17 @@ use structopt::StructOpt;
 ///
 #[derive(Debug, StructOpt)]
 pub enum Action {
-    /// Write tasks to the journal file.
+    /// Write a perticipant to the journal file.
     Add {
         /// The task description text.
         #[structopt()]
         name: String,
 
         #[structopt()]
-        years: usize,
+        years: u8,
     },
     /// Remove an entry from the journal file by position.
-    Calc {
+    Done {
         #[structopt()]
         position: usize,
     },

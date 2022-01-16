@@ -70,7 +70,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dutch_treat"
+name = "detch_treat"
 version = "0.1.0"
 dependencies = [
  "anyhow",
