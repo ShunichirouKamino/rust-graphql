@@ -119,7 +119,6 @@ pub fn remove_member(journal_path: PathBuf, member_position: u8) -> Result<()> {
 /// - 指定したtask_postionが0またはファイルサイズを超えた場合はエラー
 ///
 pub fn increment(journal_path: PathBuf, years: u8) -> Result<()> {
-    todo!();
     let file = OpenOptions::new()
         .read(true)
         .write(true)
@@ -153,6 +152,12 @@ pub fn out_list(journal_path: PathBuf) -> Result<()> {
     Ok(())
 }
 
+/// # 参加者の割り勘計算を行います。
+///
+/// - 参加者は、jsonで定義されたメンバー全てです
+/// - パーセンタイルにより、年次に応じた按分が行われます
+/// - biasオプションにより、按分前の初期金額を加算することが可能です
+///
 pub fn calc(journal_path: PathBuf, mut amount_all: usize, bias: Option<usize>) -> Result<()> {
     let file = OpenOptions::new().read(true).open(journal_path)?;
     let mut members = collect_members(&file)?;
