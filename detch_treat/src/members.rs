@@ -37,7 +37,7 @@ impl Member {
 impl fmt::Display for Member {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let created_at = self.created_at.with_timezone(&Local).format("%F %H:%M");
-        write!(f, "{:<50} [{}]", self.name, created_at)
+        write!(f, "{:<10} {:<3} [{}]", self.name, self.years, created_at)
     }
 }
 
