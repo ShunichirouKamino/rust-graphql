@@ -30,15 +30,15 @@ impl Member {
 }
 
 #[derive(Debug)]
-pub struct Amount_Member {
-    pub amount: u8,
+pub struct AmountMember {
+    pub amount: usize,
 
     pub member: Member,
 }
 
-impl Amount_Member {
-    pub fn new(amount: u8, member: Member) -> Amount_Member {
-        Amount_Member { amount, member }
+impl AmountMember {
+    pub fn new(amount: usize, member: Member) -> AmountMember {
+        AmountMember { amount, member }
     }
 }
 
@@ -53,7 +53,7 @@ impl fmt::Display for Member {
 
 /// # Member_Amountに対するフォーマット定義
 ///
-impl fmt::Display for Amount_Member {
+impl fmt::Display for AmountMember {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let created_at = self
             .member
@@ -166,6 +166,7 @@ pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
         return Err(Error::new(ErrorKind::InvalidInput, "Member list is empty!"));
     }
 
+    // 降順ソート
     members.sort_by(|a, b| b.years.cmp(&a.years));
 
     // パーセンタイル計算のために年次の合計値を計算
@@ -175,16 +176,38 @@ pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
     // }
 
     let years_sum = members.iter().fold(0, |sum, member| sum + member.years);
+    let mut amount_members: Vec<AmountMember> = Vec::new();
     for m in members {
         // 割合計算
-        let percentile = (m.years as f64 / years_sum as f64) * (amount_all as f64);
+        let amount_percentile = (m.years as f64 / years_sum as f64) * (amount_all as f64);
 
-        // 整数3桁で丸め
+        // 整数3桁に丸め
         let round_base = 100_f64;
-        let percentile_round = (percentile / round_base).round() * round_base;
-        println!("{}", percentile_round);
+        let amount_percentile_round = (amount_percentile / round_base).round() * round_base;
+
+        amount_members.push(AmountMember::new(amount_percentile_round as usize, m));
     }
 
+    // 差分計算
+    let amount_delta = amount_members
+        .iter()
+        .fold(0, |sum, member| sum + member.amount) as isize
+        - amount_all as isize;
+    let last_amount_member = amount_members.last().unwrap();
+    let last_member = members.last().unwrap().into();
+    let last = AmountMember::new(
+        (amount_delta + last_amount_member.amount as isize)
+            .try_into()
+            .unwrap(),
+        last_member,
+    );
+    amount_members.last().replace(&last);
+
+    let mut order: u32 = 1;
+    for member in amount_members {
+        println!("{}: {}", order, member);
+        order += 1;
+    }
     Ok(())
 }
 
