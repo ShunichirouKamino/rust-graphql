@@ -167,9 +167,23 @@ pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
     }
 
     members.sort_by(|a, b| b.years.cmp(&a.years));
-    let round_base: f64 = 100_f64;
-    let average_amount: f64 =
-        ((amount_all / members.len()) as f64 / round_base).round() * round_base;
+
+    // パーセンタイル計算のために年次の合計値を計算
+    // let years_sum: usize = 0;
+    // for member in members {
+    //     years_sum = years_sum + member.years;
+    // }
+
+    let years_sum = members.iter().fold(0, |sum, member| sum + member.years);
+    for m in members {
+        // 割合計算
+        let percentile = (m.years as f64 / years_sum as f64) * (amount_all as f64);
+
+        // 整数3桁で丸め
+        let round_base = 100_f64;
+        let percentile_round = (percentile / round_base).round() * round_base;
+        println!("{}", percentile_round);
+    }
 
     Ok(())
 }
