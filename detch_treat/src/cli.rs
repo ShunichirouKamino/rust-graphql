@@ -9,8 +9,10 @@ use validator::{Validate, ValidationError};
 ///
 #[derive(Debug, StructOpt)]
 pub enum Action {
-    /// Write a perticipant to the journal file.
+    /// Write a memver to the journal file.
     Add(InputParticipant),
+    /// Remove a member from the journal file.
+    Remove(InputPosition),
     /// Increment everyone's service of years.
     Increment(InputIncrement),
     /// Calculate the amount.
@@ -32,7 +34,13 @@ pub struct InputParticipant {
 #[derive(Validate, StructOpt, Debug)]
 pub struct InputIncrement {
     #[structopt()]
-    pub years: i8,
+    pub years: u8,
+}
+
+#[derive(Validate, StructOpt, Debug)]
+pub struct InputPosition {
+    #[structopt()]
+    pub position: u8,
 }
 
 /// # コマンドライン引数を読み取る構造体
