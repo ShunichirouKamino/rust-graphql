@@ -16,7 +16,7 @@ pub enum Action {
     /// Increment everyone's service of years.
     Increment(InputIncrement),
     /// Calculate the amount.
-    Calc,
+    Calc(InputAmount),
     /// Confirm the members list.
     List,
 }
@@ -41,6 +41,12 @@ pub struct InputIncrement {
 pub struct InputPosition {
     #[structopt()]
     pub position: u8,
+}
+
+#[derive(Validate, StructOpt, Debug)]
+pub struct InputAmount {
+    #[structopt()]
+    pub amount_all: usize,
 }
 
 /// # コマンドライン引数を読み取る構造体

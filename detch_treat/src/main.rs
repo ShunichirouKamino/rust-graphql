@@ -5,7 +5,9 @@ mod cli;
 mod members;
 
 use anyhow::anyhow;
-use cli::{Action::*, CommandLineArgs, InputIncrement, InputParticipant, InputPosition};
+use cli::{
+    Action::*, CommandLineArgs, InputAmount, InputIncrement, InputParticipant, InputPosition,
+};
 use members::Member;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -29,7 +31,7 @@ fn main() -> anyhow::Result<()> {
         }
         Remove(InputPosition { position }) => members::remove_member(journal_file, position),
         Increment(InputIncrement { years }) => members::increment(journal_file, years),
-        Calc {} => members::calc(journal_file),
+        Calc(InputAmount { amount_all }) => members::calc(journal_file, amount_all),
         List {} => members::out_list(journal_file),
     }?;
     Ok(())

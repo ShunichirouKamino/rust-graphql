@@ -42,15 +42,29 @@ impl Amount_Member {
     }
 }
 
-/// # Member
-///
-/// - Member
-/// - フォーマッタfに対して、タスクテキストと変換後のcreated_atを定義
+/// # Memberに対するフォーマット定義
 ///
 impl fmt::Display for Member {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let created_at = self.created_at.with_timezone(&Local).format("%F %H:%M");
         write!(f, "{:<10} {:<10} [{}]", self.name, self.years, created_at)
+    }
+}
+
+/// # Member_Amountに対するフォーマット定義
+///
+impl fmt::Display for Amount_Member {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let created_at = self
+            .member
+            .created_at
+            .with_timezone(&Local)
+            .format("%F %H:%M");
+        write!(
+            f,
+            "{:<10} {:<10} {:<10} [{}]",
+            self.member.name, self.member.years, self.amount, created_at
+        )
     }
 }
 
@@ -144,18 +158,18 @@ pub fn out_list(journal_path: PathBuf) -> Result<()> {
     Ok(())
 }
 
-pub fn calc(journal_path: PathBuf) -> Result<()> {
+pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
     let file = OpenOptions::new().read(true).open(journal_path)?;
-    let tasks = collect_members(&file)?;
+    let members = collect_members(&file)?;
 
-    if tasks.is_empty() {
-        println!("Task list is empty!");
-    } else {
-        let mut order: u32 = 1;
-        for task in tasks {
-            println!("{}: {}", order, task);
-            order += 1;
-        }
+    if members.is_empty() {
+        return Err(Error::new(ErrorKind::InvalidInput, "Member list is empty!"));
+    }
+
+    let mut order: u32 = 1;
+    for member in members {
+        println!("{}: {}", order, member);
+        order += 1;
     }
 
     Ok(())
