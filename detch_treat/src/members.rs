@@ -119,14 +119,16 @@ pub fn remove_member(journal_path: PathBuf, member_position: u8) -> Result<()> {
 /// - 指定したtask_postionが0またはファイルサイズを超えた場合はエラー
 ///
 pub fn increment(journal_path: PathBuf, years: u8) -> Result<()> {
+    todo!();
     let file = OpenOptions::new()
         .read(true)
         .write(true)
         .open(journal_path)?;
     let members = collect_members(&file)?;
-    //members.iter().map(m -> m)
+    //members.iter().map(|m| m.years += years as usize);
+    let _years = years;
 
-    serde_json::to_writer(file, &tasks)?;
+    serde_json::to_writer(file, &members)?;
     Ok(())
 }
 
