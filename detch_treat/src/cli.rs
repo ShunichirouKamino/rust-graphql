@@ -2,10 +2,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 use validator::Validate; //, ValidationError};
 
-/// # Actionの直和型
-///
-/// コマンドライン引数を受け取り、それにともなう操作を直和型で定義します。
-/// ドキュメンテーションコメントにより、help表示するコメントを記載することができます。
+/// # This is an app for dividing money.
 ///
 #[derive(Debug, StructOpt)]
 pub enum Action {
@@ -52,11 +49,11 @@ pub struct InputAmount {
     pub bias: Option<usize>,
 }
 
-/// # コマンドライン引数を読み取る構造体
-///
-/// Actionのラッパーとして起動し、subcommandで入力された型でActionをインスタンス化します。
 #[derive(Debug, StructOpt)]
-#[structopt(name = "to-do app", about = "A command line to-do app written in Rust")]
+#[structopt(
+    name = "detch treat app",
+    about = "A command line detch treat app written in Rust"
+)]
 pub struct CommandLineArgs {
     #[structopt(subcommand)]
     pub action: Action,

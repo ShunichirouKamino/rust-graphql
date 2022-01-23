@@ -1,5 +1,4 @@
-//! # todoアプリです。
-//!
+//! # 割り勘アプリです
 
 mod cli;
 mod members;
@@ -45,7 +44,7 @@ fn find_default_journal_file() -> Option<PathBuf> {
     let journal_file = ".rusty-journal.json";
     let pusher = |mut path: PathBuf| {
         path.push(journal_file);
-        println!("{:?}", path);
+        println!("Target persist file: {:?}", path);
         path
     };
     home::home_dir().map(pusher)
