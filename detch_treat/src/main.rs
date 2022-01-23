@@ -2,11 +2,11 @@
 //!
 
 mod cli;
-mod participant;
+mod members;
 
 use anyhow::anyhow;
 use cli::{Action::*, CommandLineArgs, InputIncrement, InputParticipant};
-use participant::Participant;
+use members::Member;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -25,10 +25,11 @@ fn main() -> anyhow::Result<()> {
 
     match action {
         Add(InputParticipant { name, years }) => {
-            participant::add_participant(journal_file, Participant::new(name, years))
+            members::add_participant(journal_file, Participant::new(name, years))
         }
-        Increment(InputIncrement { years }) => participant::increment(journal_file, years),
-        Calc {} => participant::calc(journal_file),
+        Increment(InputIncrement { years }) => members::increment(journal_file, years),
+        Calc {} => members::calc(journal_file),
+        List {} => members::out_list(journal_file),
     }?;
     Ok(())
 }

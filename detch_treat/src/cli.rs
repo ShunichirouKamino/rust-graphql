@@ -15,6 +15,8 @@ pub enum Action {
     Increment(InputIncrement),
     /// Calculate the amount.
     Calc,
+    /// Confirm the members list.
+    List,
 }
 
 #[derive(Validate, StructOpt, Debug)]
