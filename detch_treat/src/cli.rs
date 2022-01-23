@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
-use validator::{Validate, ValidationError};
+use validator::Validate; //, ValidationError};
 
 /// # Actionの直和型
 ///
