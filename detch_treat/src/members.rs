@@ -12,14 +12,14 @@ use std::path::PathBuf;
 pub struct Member {
     pub name: String,
 
-    pub years: u8,
+    pub years: usize,
 
     #[serde(with = "ts_seconds")]
     pub created_at: DateTime<Utc>,
 }
 
 impl Member {
-    pub fn new(name: String, years: u8) -> Member {
+    pub fn new(name: String, years: usize) -> Member {
         let created_at: DateTime<Utc> = Utc::now();
         Member {
             name,
@@ -147,7 +147,7 @@ pub fn out_list(journal_path: PathBuf) -> Result<()> {
     let members = collect_members(&file)?;
 
     if members.is_empty() {
-        println!("Member list is empty!");
+        return Err(Error::new(ErrorKind::InvalidInput, "Member list is empty!"));
     } else {
         let mut order: u32 = 1;
         for member in members {
@@ -160,17 +160,16 @@ pub fn out_list(journal_path: PathBuf) -> Result<()> {
 
 pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
     let file = OpenOptions::new().read(true).open(journal_path)?;
-    let members = collect_members(&file)?;
+    let mut members = collect_members(&file)?;
 
     if members.is_empty() {
         return Err(Error::new(ErrorKind::InvalidInput, "Member list is empty!"));
     }
 
-    let mut order: u32 = 1;
-    for member in members {
-        println!("{}: {}", order, member);
-        order += 1;
-    }
+    members.sort_by(|a, b| b.years.cmp(&a.years));
+    let round_base: f64 = 100_f64;
+    let average_amount: f64 =
+        ((amount_all / members.len()) as f64 / round_base).round() * round_base;
 
     Ok(())
 }

@@ -28,7 +28,7 @@ pub struct InputParticipant {
 
     #[structopt()]
     #[validate(range(min = 0, max = 100))]
-    pub years: u8,
+    pub years: usize,
 }
 
 #[derive(Validate, StructOpt, Debug)]
