@@ -29,6 +29,19 @@ impl Member {
     }
 }
 
+#[derive(Debug)]
+pub struct Amount_Member {
+    pub amount: u8,
+
+    pub member: Member,
+}
+
+impl Amount_Member {
+    pub fn new(amount: u8, member: Member) -> Amount_Member {
+        Amount_Member { amount, member }
+    }
+}
+
 /// # Member
 ///
 /// - Member
