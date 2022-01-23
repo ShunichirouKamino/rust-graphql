@@ -8,7 +8,7 @@ use std::fs::OpenOptions;
 use std::io::{Error, ErrorKind, Result, Seek, SeekFrom};
 use std::path::PathBuf;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Member {
     pub name: String,
 
@@ -19,8 +19,16 @@ pub struct Member {
 }
 
 impl Member {
-    pub fn new(name: String, years: usize) -> Member {
+    pub fn new_now(name: String, years: usize) -> Member {
         let created_at: DateTime<Utc> = Utc::now();
+        Member {
+            name,
+            years,
+            created_at,
+        }
+    }
+
+    pub fn new(name: String, years: usize, created_at: DateTime<Utc>) -> Member {
         Member {
             name,
             years,
@@ -119,19 +127,13 @@ pub fn remove_member(journal_path: PathBuf, member_position: u8) -> Result<()> {
 /// - 指定したtask_postionが0またはファイルサイズを超えた場合はエラー
 ///
 pub fn increment(journal_path: PathBuf, years: u8) -> Result<()> {
+    todo!();
     let file = OpenOptions::new()
         .read(true)
         .write(true)
         .open(journal_path)?;
 
     let mut tasks = collect_members(&file)?;
-
-    // if task_position == 0 || task_position > tasks.len() {
-    //     return Err(Error::new(ErrorKind::InvalidInput, "Invalid Task ID"));
-    // }
-    // tasks.remove(task_position - 1);
-
-    // file.set_len(0)?;
 
     serde_json::to_writer(file, &tasks)?;
     Ok(())
@@ -169,15 +171,10 @@ pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
     // 降順ソート
     members.sort_by(|a, b| b.years.cmp(&a.years));
 
-    // パーセンタイル計算のために年次の合計値を計算
-    // let years_sum: usize = 0;
-    // for member in members {
-    //     years_sum = years_sum + member.years;
-    // }
-
     let years_sum = members.iter().fold(0, |sum, member| sum + member.years);
     let mut amount_members: Vec<AmountMember> = Vec::new();
-    for m in members {
+
+    for m in members.clone() {
         // 割合計算
         let amount_percentile = (m.years as f64 / years_sum as f64) * (amount_all as f64);
 
@@ -189,25 +186,18 @@ pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
     }
 
     // 差分計算
-    let amount_delta = amount_members
-        .iter()
-        .fold(0, |sum, member| sum + member.amount) as isize
-        - amount_all as isize;
-    let last_amount_member = amount_members.last().unwrap();
-    let last_member = members.last().unwrap().into();
-    let last = AmountMember::new(
-        (amount_delta + last_amount_member.amount as isize)
-            .try_into()
-            .unwrap(),
-        last_member,
-    );
-    amount_members.last().replace(&last);
+    let amount_delta = amount_all as isize
+        - amount_members
+            .iter()
+            .fold(0, |sum, member| sum + member.amount) as isize;
 
     let mut order: u32 = 1;
     for member in amount_members {
         println!("{}: {}", order, member);
         order += 1;
     }
+
+    println!("Surplus: {}", amount_delta);
     Ok(())
 }
 

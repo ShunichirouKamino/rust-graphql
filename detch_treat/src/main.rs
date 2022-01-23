@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
 
     match action {
         Add(InputParticipant { name, years }) => {
-            members::add_member(journal_file, Member::new(name, years))
+            members::add_member(journal_file, Member::new_now(name, years))
         }
         Remove(InputPosition { position }) => members::remove_member(journal_file, position),
         Increment(InputIncrement { years }) => members::increment(journal_file, years),
