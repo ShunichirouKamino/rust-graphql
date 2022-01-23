@@ -27,14 +27,6 @@ impl Member {
             created_at,
         }
     }
-
-    pub fn new(name: String, years: usize, created_at: DateTime<Utc>) -> Member {
-        Member {
-            name,
-            years,
-            created_at,
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -127,13 +119,12 @@ pub fn remove_member(journal_path: PathBuf, member_position: u8) -> Result<()> {
 /// - 指定したtask_postionが0またはファイルサイズを超えた場合はエラー
 ///
 pub fn increment(journal_path: PathBuf, years: u8) -> Result<()> {
-    todo!();
     let file = OpenOptions::new()
         .read(true)
         .write(true)
         .open(journal_path)?;
-
-    let mut tasks = collect_members(&file)?;
+    let members = collect_members(&file)?;
+    //members.iter().map(m -> m)
 
     serde_json::to_writer(file, &tasks)?;
     Ok(())
@@ -160,20 +151,32 @@ pub fn out_list(journal_path: PathBuf) -> Result<()> {
     Ok(())
 }
 
-pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
+pub fn calc(journal_path: PathBuf, mut amount_all: usize, bias: Option<usize>) -> Result<()> {
     let file = OpenOptions::new().read(true).open(journal_path)?;
     let mut members = collect_members(&file)?;
+    let mut _bias: usize = 0;
 
     if members.is_empty() {
         return Err(Error::new(ErrorKind::InvalidInput, "Member list is empty!"));
     }
 
+    if let Some(b) = bias {
+        if b * members.len() > amount_all {
+            return Err(Error::new(ErrorKind::InvalidInput, "Too much bias!"));
+        } else {
+            // 後にbiasをかける為に合計金額からマイナス
+            amount_all -= b * members.len();
+            // bias金額を上書き
+            _bias = b;
+        }
+    }
+
     // 降順ソート
     members.sort_by(|a, b| b.years.cmp(&a.years));
 
+    // 個人金額計算
     let years_sum = members.iter().fold(0, |sum, member| sum + member.years);
     let mut amount_members: Vec<AmountMember> = Vec::new();
-
     for m in members.clone() {
         // 割合計算
         let amount_percentile = (m.years as f64 / years_sum as f64) * (amount_all as f64);
@@ -182,11 +185,15 @@ pub fn calc(journal_path: PathBuf, amount_all: usize) -> Result<()> {
         let round_base = 100_f64;
         let amount_percentile_round = (amount_percentile / round_base).round() * round_base;
 
-        amount_members.push(AmountMember::new(amount_percentile_round as usize, m));
+        // biasによって金額の調整
+        amount_members.push(AmountMember::new(
+            amount_percentile_round as usize + _bias,
+            m,
+        ));
     }
 
     // 差分計算
-    let amount_delta = amount_all as isize
+    let amount_delta = (amount_all as isize) + (_bias * members.len()) as isize
         - amount_members
             .iter()
             .fold(0, |sum, member| sum + member.amount) as isize;

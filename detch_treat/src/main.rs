@@ -31,7 +31,7 @@ fn main() -> anyhow::Result<()> {
         }
         Remove(InputPosition { position }) => members::remove_member(journal_file, position),
         Increment(InputIncrement { years }) => members::increment(journal_file, years),
-        Calc(InputAmount { amount_all }) => members::calc(journal_file, amount_all),
+        Calc(InputAmount { amount_all, bias }) => members::calc(journal_file, amount_all, bias),
         List {} => members::out_list(journal_file),
     }?;
     Ok(())

@@ -47,6 +47,9 @@ pub struct InputPosition {
 pub struct InputAmount {
     #[structopt()]
     pub amount_all: usize,
+
+    #[structopt()]
+    pub bias: Option<usize>,
 }
 
 /// # コマンドライン引数を読み取る構造体
