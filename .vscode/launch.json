@@ -8,8 +8,10 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/guessing_game/src/main",
-            "args": [],
+            "program": "${workspaceFolder}/detch_treat",
+            "args": [
+                "add taro"
+            ],
             "cwd": "${workspaceFolder}"
         }
     ]

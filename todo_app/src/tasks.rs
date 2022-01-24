@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::fmt;
 use std::fs::File;
 use std::fs::OpenOptions;
-use std::io::{BufReader, Error, ErrorKind, Result, Seek, SeekFrom};
+use std::io::{Error, ErrorKind, Result, Seek, SeekFrom};
 use std::path::PathBuf;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -41,20 +41,13 @@ impl fmt::Display for Task {
 /// - タスクの追加
 ///
 pub fn add_task(journal_path: PathBuf, task: Task) -> Result<()> {
-    let mut file = OpenOptions::new()
+    let file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
         .open(journal_path)?;
 
-    let mut tasks: Vec<Task> = match serde_json::from_reader(&file) {
-        Ok(tasks) => tasks,
-        Err(e) if e.is_eof() => Vec::new(),
-        Err(e) => Err(e)?,
-    };
-
-    file.seek(SeekFrom::Start(0))?;
-
+    let mut tasks = collect_tasks(&file)?;
     tasks.push(task);
     serde_json::to_writer(file, &tasks)?;
 
@@ -72,12 +65,6 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
         .read(true)
         .write(true)
         .open(journal_path)?;
-
-    // let tasks = match serde_json::from_reader(file) {
-    //     Ok(tasks) => tasks,
-    //     Err(e) if e.is_eof() => Vec::new(),
-    //     Err(e) => Err(e)?,
-    // };
 
     let mut tasks = collect_tasks(&file)?;
 
@@ -123,7 +110,7 @@ fn collect_tasks(mut file: &File) -> Result<Vec<Task>> {
     let tasks = match serde_json::from_reader(file) {
         Ok(tasks) => tasks,
         Err(e) if e.is_eof() => Vec::new(),
-        Err(e) => Err(e)?,
+        Err(e) => return Err(Error::from(e)),
     };
     // rewind the file after.
     file.seek(SeekFrom::Start(0))?;

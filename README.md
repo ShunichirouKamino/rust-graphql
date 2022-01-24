@@ -1,4 +1,4 @@
-# rust-graphql
+# rust-sandbox
 
 ## Settings
 

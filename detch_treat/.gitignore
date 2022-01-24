@@ -1,0 +1,19 @@
+# https://github.com/github/gitignore/blob/main/Rust.gitignore
+# https://www.toptal.com/developers/gitignore/api/rust
+# will have compiled files and executables
+debug/
+target/
+
+# Remove Cargo.lock from gitignore if creating an executable, leave it for libraries
+# More information here https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
+# https://doc.rust-lang.org/cargo/faq.html#why-do-binaries-have-cargolock-in-version-control-but-not-libraries
+# Cargo.lock
+
+# MSVC Windows builds of rustc generate these, which store debugging information
+*.pdb
+
+# Executable files
+*.exe
+
+# output.json
+src/*.json
