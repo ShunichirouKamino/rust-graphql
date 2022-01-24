@@ -182,11 +182,13 @@ pub fn calc(journal_path: PathBuf, mut amount_all: usize, bias: Option<usize>) -
     members.sort_by(|a, b| b.years.cmp(&a.years));
 
     // 個人金額計算
-    let years_sum = members.iter().fold(0, |sum, member| sum + member.years);
+    let years_sum = members
+        .iter()
+        .fold(0.0, |sum, member| sum + (member.years as f64).sqrt());
     let mut amount_members: Vec<AmountMember> = Vec::new();
     for m in members.clone() {
         // 割合計算
-        let amount_percentile = (m.years as f64 / years_sum as f64) * (amount_all as f64);
+        let amount_percentile = ((m.years as f64).sqrt() / years_sum) * (amount_all as f64);
 
         // 整数3桁に丸め
         let round_base = 100_f64;
