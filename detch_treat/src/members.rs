@@ -79,12 +79,13 @@ pub fn add_member(journal_path: PathBuf, member: Member) -> Result<()> {
         .read(true)
         .write(true)
         .create(true)
-        .open(journal_path)?;
+        .open(&journal_path)?;
 
     let mut tasks = collect_members(&file)?;
     tasks.push(member);
     serde_json::to_writer(file, &tasks)?;
 
+    out_list(journal_path)?;
     Ok(())
 }
 
@@ -98,7 +99,7 @@ pub fn remove_member(journal_path: PathBuf, member_position: u8) -> Result<()> {
     let file = OpenOptions::new()
         .read(true)
         .write(true)
-        .open(journal_path)?;
+        .open(&journal_path)?;
 
     let mut members = collect_members(&file)?;
 
@@ -109,6 +110,7 @@ pub fn remove_member(journal_path: PathBuf, member_position: u8) -> Result<()> {
     file.set_len(0)?;
 
     serde_json::to_writer(file, &members)?;
+    out_list(journal_path)?;
     Ok(())
 }
 
@@ -156,6 +158,7 @@ pub fn out_list(journal_path: PathBuf) -> Result<()> {
 ///
 /// - 参加者は、jsonで定義されたメンバー全てです
 /// - パーセンタイルにより、年次に応じた按分が行われます
+///   - 年次は累乗根を取ることで傾斜を小さくする
 /// - biasオプションにより、按分前の初期金額を加算することが可能です
 ///
 pub fn calc(journal_path: PathBuf, mut amount_all: usize, bias: Option<usize>) -> Result<()> {
