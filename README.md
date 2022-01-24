@@ -44,4 +44,17 @@ Hello, world!
 **Developers**
 
 - Open a Remote Window
+  - Add Proxy config to `.devcontainer/devcontainer.json`
+
+```json
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			// Use the VARIANT arg to pick a Debian OS version: buster, bullseye
+			// Use bullseye when on local on arm64/Apple Silicon.
+			"VARIANT": "buster",
+			"PROXY": "http://xxxx:8080" ←←
+		}
+	},
+```
   - Reopen in Container
