@@ -27,9 +27,16 @@ Hello, world!
 
 - `$ cargo run`
 
-## GraphQL
+## Version
 
-`$ cargo init --bin graph-ql`
+- Dockerfile
+  - [Tag list](https://mcr.microsoft.com/v2/vscode/devcontainers/rust/tags/list)
+  - [Update example](https://github.com/microsoft/vscode-dev-containers/blob/main/containers/rust/history/0.201.4.md)
+
+```Dockerfile
+ARG VARIANT="buster"
+FROM mcr.microsoft.com/vscode/devcontainers/rust:0-${VARIANT}
+```
 
 ## Remote Container
 
