@@ -28,13 +28,16 @@ SUBCOMMANDS:
 ```
 
 - Check the target members.
+
   - `$ cargo run -- list`
 
 - Add the member.
+
   - `$ cargo run -- add Name Years`
 
 - Remove the member.
+
   - `$ cargo run -- add Serial`
 
 - Calculate.
-  - `$ cargo run -- calc [bias]`
+  - `$ cargo run -- calc amount [bias]`
