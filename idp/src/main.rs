@@ -3,7 +3,7 @@
 mod hello_html;
 mod hello_rest;
 
-use actix_web::{middleware, App, HttpServer};
+use actix_web::{middleware, web, App, HttpServer};
 use hello_html::hello_html_handler;
 use hello_rest::hello_rest_handler;
 
@@ -17,7 +17,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(middleware::Logger::default())
             .service(hello_html_handler)
-            .service(hello_rest_handler)
+            .service(web::resource("/rest").route(web::post().to(hello_rest_handler)))
     })
     .bind("127.0.0.1:8080")?
     .run()

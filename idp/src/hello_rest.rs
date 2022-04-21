@@ -1,8 +1,13 @@
-use actix_web::{get, web, Responder};
+use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 
-#[get("/todos/{id}")]
-async fn hello_rest_handler(params: web::Path<(u32, String)>) -> impl Responder {
-    let (id, name) = params.into_inner();
-    format!("Hello {}! id:{}", name, id)
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MyObj {
+    name: String,
+    number: i32,
+}
+
+pub async fn hello_rest_handler(item: web::Json<MyObj>) -> HttpResponse {
+    println!("model: {:?}", &item);
+    HttpResponse::Ok().json(item.0) // <- send response
 }
