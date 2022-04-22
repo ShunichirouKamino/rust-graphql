@@ -5,7 +5,8 @@ mod token;
 
 use actix_web::{error, middleware, web, App, HttpResponse, HttpServer};
 use resource::hello_html::hello_html_handler;
-use resource::hello_rest::hello_rest_handler;
+
+use crate::resource::hello_rest::{hello_rest_handler, make_jwt_handler};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -28,6 +29,7 @@ async fn main() -> std::io::Result<()> {
             )
             .service(hello_html_handler)
             .service(web::resource("/rest").route(web::post().to(hello_rest_handler)))
+            .service(web::resource("/jwt").route(web::post().to(make_jwt_handler)))
     })
     .bind("127.0.0.1:8080")?
     .run()
