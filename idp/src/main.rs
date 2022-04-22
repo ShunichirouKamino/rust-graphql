@@ -1,15 +1,11 @@
-//! # idpサーバです
+//! Idp Web Server
 //!
-mod hello_html;
-mod hello_rest;
+mod resource;
+mod token;
 
-use actix_web::{
-    error, middleware,
-    web::{self, JsonConfig},
-    App, HttpResponse, HttpServer,
-};
-use hello_html::hello_html_handler;
-use hello_rest::hello_rest_handler;
+use actix_web::{error, middleware, web, App, HttpResponse, HttpServer};
+use resource::hello_html::hello_html_handler;
+use resource::hello_rest::hello_rest_handler;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -25,6 +21,7 @@ async fn main() -> std::io::Result<()> {
                     .limit(4096) // limit request payload size
                     .content_type(|mime| mime == mime::TEXT_PLAIN) // only accept text/plain content type
                     .error_handler(|err, req| {
+                        log::info!("error request {}", req.path());
                         error::InternalError::from_response(err, HttpResponse::Conflict().into())
                             .into()
                     }), // use custom error handler
