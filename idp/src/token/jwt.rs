@@ -1,6 +1,7 @@
 use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -16,10 +17,11 @@ pub fn make_jwt(secret: &str, aud: &str) -> Result<String, String> {
     let now = Utc::now();
     let iat = now.timestamp();
     let exp = (now + Duration::hours(8)).timestamp();
+    let sub = Uuid::new_v4();
     let my_claims = Claims {
         iss: "example_system".to_owned(),
         aud: aud.to_owned(),
-        sub: "example_system".to_owned(),
+        sub: sub.to_string(),
         iat,
         exp,
     };
