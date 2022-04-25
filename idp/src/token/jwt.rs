@@ -3,7 +3,6 @@ use jsonwebtoken::{
     decode, encode, errors::ErrorKind, Algorithm, DecodingKey, EncodingKey, Header, Validation,
 };
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -19,11 +18,10 @@ pub fn make_jwt(secret: &str, aud: &str) -> Result<String, String> {
     let now = Utc::now();
     let iat = now.timestamp();
     let exp = (now + Duration::hours(8)).timestamp();
-    let sub = Uuid::new_v4();
     let my_claims = Claims {
         iss: "example_system".to_owned(),
         aud: aud.to_owned(),
-        sub: sub.to_string(),
+        sub: aud.to_owned(),
         iat,
         exp,
     };
@@ -36,9 +34,11 @@ pub fn make_jwt(secret: &str, aud: &str) -> Result<String, String> {
     Ok(token)
 }
 
-pub fn decode_jwt(secret: &str, token: &str) -> Result<Claims, String> {
+pub fn decode_jwt(secret: &str, token: &str, aud: &str) -> Result<Claims, String> {
     let mut validation = Validation::new(Algorithm::HS256);
     let decode_key = DecodingKey::from_secret(secret.as_ref());
+    validation.sub = Some(aud.to_string());
+    validation.set_audience(&[aud]);
     let token_data = match decode::<Claims>(&token, &decode_key, &validation) {
         Ok(c) => c,
         Err(err) => match *err.kind() {
