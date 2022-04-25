@@ -1,0 +1,68 @@
+{
+	"id": "1f1e381b-7a45-06ea-ee45-0b1629d17ef7",
+	"name": "Rust-idp",
+	"description": "",
+	"order": [
+		"9896a641-db8b-d913-4b11-a26b936bf6ce",
+		"b3f67bd1-223a-bc56-92a7-5f9f3a481156"
+	],
+	"folders": [],
+	"folders_order": [],
+	"timestamp": 1650896811502,
+	"owner": "18229596",
+	"public": false,
+	"requests": [
+		{
+			"id": "9896a641-db8b-d913-4b11-a26b936bf6ce",
+			"headers": "Content-Type: application/json\n",
+			"headerData": [
+				{
+					"key": "Content-Type",
+					"value": "application/json",
+					"description": "",
+					"enabled": true
+				}
+			],
+			"url": "http://localhost:8080/jwt",
+			"queryParams": [],
+			"preRequestScript": null,
+			"pathVariables": {},
+			"pathVariableData": [],
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1650899305687,
+			"name": "http://localhost:8080/jwt",
+			"description": "",
+			"collectionId": "1f1e381b-7a45-06ea-ee45-0b1629d17ef7",
+			"responses": [],
+			"rawModeData": "{\n  \"name\": \"kamino\",\n  \"passwd\": \"adfadf\"\n}"
+		},
+		{
+			"id": "b3f67bd1-223a-bc56-92a7-5f9f3a481156",
+			"headers": "",
+			"headerData": [],
+			"url": "",
+			"queryParams": [],
+			"pathVariables": {},
+			"pathVariableData": [],
+			"preRequestScript": null,
+			"method": "GET",
+			"collectionId": "1f1e381b-7a45-06ea-ee45-0b1629d17ef7",
+			"data": null,
+			"dataMode": "params",
+			"name": "validate",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1650901597368,
+			"version": 2,
+			"responses": [],
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {}
+		}
+	]
+}

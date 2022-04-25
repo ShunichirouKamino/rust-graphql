@@ -1,10 +1,12 @@
 use chrono::{Duration, Utc};
-use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+use jsonwebtoken::{
+    decode, encode, errors::ErrorKind, Algorithm, DecodingKey, EncodingKey, Header, Validation,
+};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Claims {
+pub struct Claims {
     iss: String, // Issuer , this idp itself.
     aud: String, // Audience, idp user.
     sub: String, // User identifier.
@@ -32,4 +34,19 @@ pub fn make_jwt(secret: &str, aud: &str) -> Result<String, String> {
     };
 
     Ok(token)
+}
+
+pub fn decode_jwt(secret: &str, token: &str) -> Result<Claims, String> {
+    let mut validation = Validation::new(Algorithm::HS256);
+    let decode_key = DecodingKey::from_secret(secret.as_ref());
+    let token_data = match decode::<Claims>(&token, &decode_key, &validation) {
+        Ok(c) => c,
+        Err(err) => match *err.kind() {
+            ErrorKind::InvalidToken => panic!("Token is invalid"), // Example on how to handle a specific error
+            ErrorKind::InvalidIssuer => panic!("Issuer is invalid"), // Example on how to handle a specific error
+            _ => panic!("Some other errors"),
+        },
+    };
+
+    Ok(token_data.claims)
 }
