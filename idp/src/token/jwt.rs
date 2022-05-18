@@ -39,7 +39,7 @@ pub fn decode_jwt(secret: &str, token: &str, aud: &str) -> Result<Claims, String
     let decode_key = DecodingKey::from_secret(secret.as_ref());
     validation.sub = Some(aud.to_string());
     validation.set_audience(&[aud]);
-    let token_data = match decode::<Claims>(&token, &decode_key, &validation) {
+    let token_data = match decode::<Claims>(token, &decode_key, &validation) {
         Ok(c) => c,
         Err(err) => match *err.kind() {
             ErrorKind::InvalidToken => panic!("Token is invalid"), // Example on how to handle a specific error
