@@ -589,6 +589,7 @@ dependencies = [
  "jsonwebtoken",
  "log",
  "mime",
+ "regex",
  "serde",
  "serde_json",
 ]
