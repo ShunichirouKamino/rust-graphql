@@ -1,6 +1,9 @@
 //! Idp Web Server
 //!
+mod domain;
+mod entity;
 mod resource;
+mod test;
 mod token;
 
 use actix_web::{error, middleware, web, App, HttpResponse, HttpServer};
