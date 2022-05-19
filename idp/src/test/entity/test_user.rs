@@ -3,7 +3,7 @@ mod tests {
     use crate::{domain::mail_address::MailAddress, entity::user::User};
 
     #[test]
-    fn it_works() {
+    fn test_user_ok() {
         let mail_string = "test.test@gmail.com".to_string();
         let mail = MailAddress::try_from(mail_string.clone());
         let user = User::new(mail.unwrap());
