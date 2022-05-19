@@ -23,6 +23,6 @@ impl TryFrom<String> for MailAddress {
 /// For reference, here is the conversion process when no validation is applied.
 impl From<MailAddress> for String {
     fn from(email: MailAddress) -> Self {
-        MailAddress(email)
+        email.0
     }
 }
