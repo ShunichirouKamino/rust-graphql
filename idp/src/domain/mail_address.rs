@@ -20,7 +20,7 @@ impl TryFrom<String> for MailAddress {
     }
 }
 
-/// For reference, here is the conversion process when no validation is applied.
+/// MailAddress to String conversion process
 impl From<MailAddress> for String {
     fn from(email: MailAddress) -> Self {
         email.0
