@@ -12,7 +12,7 @@ mod tests {
     #[test]
     fn test_mail_ng() {
         let mail_string = "test.test@@@gmail.com".to_string();
-        let result = MailAddress::try_from(mail_string.clone());
+        let result = MailAddress::try_from(mail_string);
         assert!(result.is_err());
     }
 }
