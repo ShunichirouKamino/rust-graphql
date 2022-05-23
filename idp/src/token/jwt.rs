@@ -33,11 +33,11 @@ pub fn make_jwt(secret: &str, aud: &MailAddress) -> my_error::Result<String> {
     Ok(token)
 }
 
-pub fn decode_jwt(secret: &str, token: &str, aud: &str) -> my_error::Result<Claims> {
+pub fn decode_jwt(secret: &str, token: &str, aud: &MailAddress) -> my_error::Result<Claims> {
     let mut validation = Validation::new(Algorithm::HS256);
     let decode_key = DecodingKey::from_secret(secret.as_ref());
-    validation.sub = Some(aud.to_string());
-    validation.set_audience(&[aud]);
+    validation.sub = Some(String::from(aud.clone()));
+    validation.set_audience(&[String::from(aud.clone())]);
     let token_data = match decode::<Claims>(token, &decode_key, &validation) {
         Ok(c) => c,
         Err(err) => match *err.kind() {
