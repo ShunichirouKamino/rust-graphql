@@ -23,19 +23,6 @@ impl TryFrom<String> for MailAddress {
     }
 }
 
-impl MailAddress {
-    pub fn mail_string(&self) -> String {
-        self.mail_string.clone()
-    }
-}
-
-// impl MailAddress {
-//     pub fn new(email: impl Into<String>) -> Self {
-//         a = email.into();
-//         Self(MailAddress::try_from(email.into()))
-//     }
-// }
-
 /// MailAddress to String conversion process
 impl From<MailAddress> for String {
     fn from(email: MailAddress) -> Self {
