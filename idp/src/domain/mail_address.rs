@@ -1,9 +1,10 @@
 use regex::Regex;
+use serde::Serialize;
 use std::convert::TryFrom;
 
 /// Value objects are tuple structures because they are one primitive-based.
 /// Uniquely identifies a user.
-#[derive(PartialEq, Eq, Clone, PartialOrd, Ord, Debug)]
+#[derive(PartialEq, Eq, Clone, PartialOrd, Ord, Debug, Serialize)]
 pub struct MailAddress(String);
 
 // Constructs a value object following the regular expression of an email address.
