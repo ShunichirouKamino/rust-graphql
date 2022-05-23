@@ -4,7 +4,7 @@ use jsonwebtoken::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::domain::mail_address::MailAddress;
+use crate::{domain::mail_address::MailAddress, error::my_error};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -15,7 +15,7 @@ pub struct Claims {
     exp: i64,    // expiration time
 }
 
-pub fn make_jwt(secret: &str, aud: &MailAddress) -> Result<String, String> {
+pub fn make_jwt(secret: &str, aud: &MailAddress) -> my_error::Result<String> {
     let header = Header::new(Algorithm::HS256);
     let now = Utc::now();
     let iat = now.timestamp();
@@ -28,15 +28,12 @@ pub fn make_jwt(secret: &str, aud: &MailAddress) -> Result<String, String> {
         exp,
     };
     let encoding_key = EncodingKey::from_secret(secret.as_ref());
-    let token = match encode(&header, &my_claims, &encoding_key) {
-        Ok(t) => t,
-        Err(_) => panic!("todo panic!"),
-    };
+    let token = encode(&header, &my_claims, &encoding_key)?;
 
     Ok(token)
 }
 
-pub fn decode_jwt(secret: &str, token: &str, aud: &str) -> Result<Claims, String> {
+pub fn decode_jwt(secret: &str, token: &str, aud: &str) -> my_error::Result<Claims> {
     let mut validation = Validation::new(Algorithm::HS256);
     let decode_key = DecodingKey::from_secret(secret.as_ref());
     validation.sub = Some(aud.to_string());

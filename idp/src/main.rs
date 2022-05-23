@@ -2,11 +2,12 @@
 //!
 mod domain;
 mod entity;
+mod error;
 mod resource;
 mod test;
 mod token;
 
-use actix_web::{error, middleware, web, App, HttpResponse, HttpServer};
+use actix_web::{error as actix_error, middleware, web, App, HttpResponse, HttpServer};
 use resource::hello_html::hello_html_handler;
 
 use crate::resource::hello_resource::hello_handler;
@@ -27,8 +28,11 @@ async fn main() -> std::io::Result<()> {
                     .content_type(|mime| mime == mime::TEXT_PLAIN) // only accept text/plain content type
                     .error_handler(|err, req| {
                         log::info!("error request {}", req.path());
-                        error::InternalError::from_response(err, HttpResponse::Conflict().into())
-                            .into()
+                        actix_error::InternalError::from_response(
+                            err,
+                            HttpResponse::Conflict().into(),
+                        )
+                        .into()
                     }), // use custom error handler
             )
             .service(hello_html_handler)
