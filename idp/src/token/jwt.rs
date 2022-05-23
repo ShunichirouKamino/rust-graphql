@@ -4,6 +4,8 @@ use jsonwebtoken::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::domain::mail_address::MailAddress;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     iss: String, // Issuer , this idp itself.
@@ -13,15 +15,15 @@ pub struct Claims {
     exp: i64,    // expiration time
 }
 
-pub fn make_jwt(secret: &str, aud: &str) -> Result<String, String> {
+pub fn make_jwt(secret: &str, aud: &MailAddress) -> Result<String, String> {
     let header = Header::new(Algorithm::HS256);
     let now = Utc::now();
     let iat = now.timestamp();
     let exp = (now + Duration::hours(8)).timestamp();
     let my_claims = Claims {
         iss: "example_system".to_owned(),
-        aud: aud.to_owned(),
-        sub: aud.to_owned(),
+        aud: String::from(aud.clone()),
+        sub: String::from(aud.clone()),
         iat,
         exp,
     };

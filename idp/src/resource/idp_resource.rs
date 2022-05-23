@@ -1,9 +1,9 @@
 //! Idp Resource.
 
+use crate::domain::mail_address::MailAddress;
+use crate::token::jwt::{decode_jwt, make_jwt};
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
-
-use crate::token::jwt::{decode_jwt, make_jwt};
 
 // todo making secret
 const SECRET: &str = "secret";
@@ -24,7 +24,8 @@ pub async fn make_jwt_handler(
     body: web::Json<AuthenticationReqBody>,
 ) -> actix_web::Result<HttpResponse> {
     // todo authentication
-    let jwt = make_jwt(SECRET, &body.email);
+    let mail = MailAddress::try_from(body.email.clone());
+    let jwt = make_jwt(SECRET, &mail.unwrap());
     println!("jwt: {:?}", &jwt);
     Ok(HttpResponse::Ok().json(jwt))
 }
