@@ -5,25 +5,40 @@ use std::convert::TryFrom;
 /// Value objects are tuple structures because they are one primitive-based.
 /// Uniquely identifies a user.
 #[derive(PartialEq, Eq, Clone, PartialOrd, Ord, Debug, Serialize)]
-pub struct MailAddress(String);
+pub struct MailAddress {
+    mail_string: String,
+}
 
 // Constructs a value object following the regular expression of an email address.
 impl TryFrom<String> for MailAddress {
     type Error = ();
 
-    fn try_from(email: String) -> Result<Self, Self::Error> {
+    fn try_from(mail_string: String) -> Result<Self, Self::Error> {
         let regex = Regex::new(r#"^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$"#).unwrap();
-        if regex.is_match(email.as_str()) {
-            Ok(Self(email))
+        if regex.is_match(mail_string.as_str()) {
+            Ok(Self { mail_string })
         } else {
             Err(())
         }
     }
 }
 
+impl MailAddress {
+    pub fn mail_string(&self) -> String {
+        self.mail_string.clone()
+    }
+}
+
+// impl MailAddress {
+//     pub fn new(email: impl Into<String>) -> Self {
+//         a = email.into();
+//         Self(MailAddress::try_from(email.into()))
+//     }
+// }
+
 /// MailAddress to String conversion process
 impl From<MailAddress> for String {
     fn from(email: MailAddress) -> Self {
-        email.0
+        email.mail_string
     }
 }
