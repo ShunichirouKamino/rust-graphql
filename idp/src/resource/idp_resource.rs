@@ -31,7 +31,7 @@ pub async fn make_jwt_handler(
     println!("jwt: {:?}", &jwt);
     let res = SingInResponse {
         user: User::of(mail),
-        jwt: jwt.unwrap(),
+        token: jwt.unwrap(),
     };
     Ok(HttpResponse::Ok().json(res))
 }
