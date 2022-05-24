@@ -25,11 +25,11 @@ impl TryFrom<String> for MailAddress {
     }
 }
 
-// impl MailAddress {
-//     fn new<T: Into<String>>(mail_string: T) -> Result<Self, MyError> {
-//         MailAddress::try_from(mail_string.into())?;
-//     }
-// }
+impl MailAddress {
+    pub fn of<T: Into<String>>(mail_string: T) -> Result<Self, MyError> {
+        MailAddress::try_from(mail_string.into())
+    }
+}
 
 /// MailAddress to String conversion process
 impl From<MailAddress> for String {
