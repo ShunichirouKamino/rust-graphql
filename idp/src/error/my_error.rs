@@ -1,28 +1,32 @@
-use std::fmt;
+use std::{error::Error, fmt};
 
-pub struct MyError {
-    cause: Box<dyn std::error::Error>,
+#[derive(Debug)]
+pub enum MyError {
+    Decode,
+    Encode,
+    InvalidValue,
+}
+
+impl MyError {}
+
+impl Error for MyError {
+    fn description(&self) -> &str {
+        match *self {
+            MyError::InvalidValue => "Invalid Value Error",
+            MyError::Decode => "Decode Error",
+            MyError::Encode => "Encode Error",
+        }
+    }
 }
 
 pub type Result<T, E = MyError> = std::result::Result<T, E>;
 
 impl fmt::Display for MyError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self.cause, f)
-    }
-}
-
-impl fmt::Debug for MyError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", &self.cause)
-    }
-}
-
-/// `MyError` for any error that implements `Error`
-impl<T: std::error::Error + 'static> From<T> for MyError {
-    fn from(err: T) -> MyError {
-        MyError {
-            cause: Box::new(err),
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            MyError::InvalidValue => f.write_str("Invalid Value Error"),
+            MyError::Decode => f.write_str("Decode Error"),
+            MyError::Encode => f.write_str("Encode Error"),
         }
     }
 }
