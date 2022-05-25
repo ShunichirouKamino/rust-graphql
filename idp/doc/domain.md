@@ -13,6 +13,7 @@
       - [**Q. 等価性の定義はどのように行っているの？**](#q-等価性の定義はどのように行っているの)
       - [**Q. 構造体に文字列を持たせる場合、`String`と`&str`どっちがいいの？**](#q-構造体に文字列を持たせる場合-stringとstrどっちがいいの)
       - [**Q. なぜ try_from と of の 2 つのインスタンシエートメソッドがあるの？**](#q-なぜ-try_from-と-of-の-2-つのインスタンシエートメソッドがあるの)
+      - [**Q. MyError って何？**](#q-myerror-って何)
   - [エンティティ](#エンティティ)
 
 <!-- /code_chunk_output -->
@@ -60,6 +61,14 @@
   - 複数要素から成る値オブジェクトである場合は、素直に impl に getter 定義する。
 
 ```rust
+use regex::Regex;
+use serde::Serialize;
+use std::convert::TryFrom;
+
+use crate::error::my_error::{self, MyError};
+
+/// Value objects are tuple structures because they are one primitive-based.
+/// Uniquely identifies a user.
 #[derive(PartialEq, Eq, Clone, PartialOrd, Ord, Debug, Serialize)]
 pub struct MailAddress {
     mail_string: String,
@@ -69,7 +78,7 @@ pub struct MailAddress {
 impl TryFrom<String> for MailAddress {
     type Error = MyError;
 
-    fn try_from(mail_string: String) -> Result<Self, Self::Error> {
+    fn try_from(mail_string: String) -> my_error::Result<Self> {
         let regex = Regex::new(r#"^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$"#).unwrap();
         if regex.is_match(mail_string.as_str()) {
             Ok(Self { mail_string })
@@ -80,7 +89,7 @@ impl TryFrom<String> for MailAddress {
 }
 
 impl MailAddress {
-    pub fn of<T: Into<String>>(mail_string: T) -> Result<Self, MyError> {
+    pub fn of<T: Into<String>>(mail_string: T) -> my_error::Result<Self> {
         MailAddress::try_from(mail_string.into())
     }
 }
@@ -208,7 +217,7 @@ fn get_user() -> Person {
 - 失敗する可能性のある型変換は、`trait`に対して明示的に`TryFrom`を実装したい。
   - 特に値オブジェクトの場合は、インスタンシエートに対して条件を付けることが多く、`TryFrom`が適している。
 
-上記を満たすために、本来`Into<String>`によるトレイト境界を用いて、以下のような実装がしたいです。
+上記を満たすために、本来`Into<String>`によるトレイト境界（ジェネリックに対して型を付け、そのルールの有効範囲を指定）を用いて、以下のような実装がしたいです。
 
 - `mail_string`は`Into<String>`であることで、`try_from`の引数は`String`でも`&str`でも良いです。
 - 構造体を構築するタイミングで`into`を実施し、`&str`の場合は`String`に変換され、`String`の場合は変換は行われません。
@@ -276,6 +285,156 @@ impl<T> const From<T> for T {
     }
 }
 ```
+
+#### **Q. MyError って何？**
+
+`TryFrom` の`trait`は、以下のようになっています。これは、`Error`として何らかの型を定義し、`try_from`の`Result`型に適用することを意味しています。今回はこれを利用し、バリデーション判定を行っています。
+
+```rust
+// https://doc.rust-lang.org/stable/src/core/convert/mod.rs.html#469-477
+#[rustc_diagnostic_item = "TryFrom"]
+#[stable(feature = "try_from", since = "1.34.0")]
+pub trait TryFrom<T>: Sized {
+    /// The type returned in the event of a conversion error.
+    #[stable(feature = "try_from", since = "1.34.0")]
+    type Error;
+
+    /// Performs the conversion.
+    #[stable(feature = "try_from", since = "1.34.0")]
+    fn try_from(value: T) -> Result<Self, Self::Error>;
+}
+```
+
+例えば、0 以上の数値からしか生成できない`TryFrom`の実装を簡単に行うと、以下のようになります。
+`Error`には自前の Error を定義せず、あくまで&str として返却されます。
+
+```rust
+impl TryFrom<i32> for GreaterThanZero {
+    type Error = &'static str;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        if value <= 0 {
+            Err("GreaterThanZero only accepts value superior than zero!")
+        } else {
+            Ok(GreaterThanZero(value))
+        }
+    }
+}
+```
+
+今回の実装では、自前で`MyError`型を定義しています。
+
+```rust
+impl TryFrom<String> for MailAddress {
+    type Error = MyError;
+
+    fn try_from(mail_string: String) -> my_error::Result<Self> {
+        let regex = Regex::new(r#"^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$"#).unwrap();
+        if regex.is_match(mail_string.as_str()) {
+            Ok(Self { mail_string })
+        } else {
+            Err(my_error::MyError::InvalidValue)
+        }
+    }
+}
+```
+
+- my_error.rs
+
+```rust
+use std::{error::Error, fmt};
+
+#[derive(Debug)]
+pub enum MyError {
+    Decode,
+    Encode,
+    InvalidValue,
+}
+
+impl Error for MyError {}
+
+pub type Result<T, E = MyError> = std::result::Result<T, E>;
+
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            MyError::InvalidValue => f.write_str("Invalid Value Error"),
+            MyError::Decode => f.write_str("Decode Error"),
+            MyError::Encode => f.write_str("Encode Error"),
+        }
+    }
+}
+```
+
+- MyError として、どういったエラーが発生するかの種類を列挙で保持します。
+  - 特にドメイン実装時に必要なのは、`InvalidValue`です。
+- `impl Error for MyError {}`にて`MyError`に`Error`トレイトを実装しています。これは、`Debug`と`Display`の実装を強要するためです。
+  - これまでは、`description`メソッドをオーバライドすることで`Error`時のコンソールログを実装していたようですが、現在は`Display`と`Debug`をスーパートレイトとしているようで、それらを用いてコンソールログを実装してねという方針のようです。
+- `Result`は、`std::result`に対して`MyError`を事前に投入しておくシンタックスシュガーです。
+- `Debug`については`derive`アトリビュートで実装していますが、`Display`については自前で実装しています。これは、`Enum` の列挙定数がそのままコンソールに出力されてしまうためです。
+  - 今後のことを考えると、`Enum`列挙定数に`String`等を持たせ、その値も含めて出力することを考えると、`Display`のみ拡張しておくほうが良いと考えました。
+
+（参考）std の error 実装
+
+````rust
+// https://doc.rust-lang.org/src/std/error.rs.html#55-160
+pub trait Error: Debug + Display {
+    #[stable(feature = "error_source", since = "1.30.0")]
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
+
+    /// Gets the `TypeId` of `self`.
+    #[doc(hidden)]
+    #[unstable(
+        feature = "error_type_id",
+        reason = "this is memory-unsafe to override in user code",
+        issue = "60784"
+    )]
+    fn type_id(&self, _: private::Internal) -> TypeId
+    where
+        Self: 'static,
+    {
+        TypeId::of::<Self>()
+    }
+
+    /// Returns a stack backtrace, if available, of where this error occurred.
+    ///
+    /// This function allows inspecting the location, in code, of where an error
+    /// happened. The returned `Backtrace` contains information about the stack
+    /// trace of the OS thread of execution of where the error originated from.
+    ///
+    /// Note that not all errors contain a `Backtrace`. Also note that a
+    /// `Backtrace` may actually be empty. For more information consult the
+    /// `Backtrace` type itself.
+    #[unstable(feature = "backtrace", issue = "53487")]
+    fn backtrace(&self) -> Option<&Backtrace> {
+        None
+    }
+
+    /// ```
+    /// if let Err(e) = "xc".parse::<u32>() {
+    ///     // Print `e` itself, no need for description().
+    ///     eprintln!("Error: {e}");
+    /// }
+    /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
+    #[rustc_deprecated(since = "1.42.0", reason = "use the Display impl or to_string()")]
+    fn description(&self) -> &str {
+        "description() is deprecated; use Display"
+    }
+
+    #[stable(feature = "rust1", since = "1.0.0")]
+    #[rustc_deprecated(
+        since = "1.33.0",
+        reason = "replaced by Error::source, which can support downcasting"
+    )]
+    #[allow(missing_docs)]
+    fn cause(&self) -> Option<&dyn Error> {
+        self.source()
+    }
+}
+````
 
 ## エンティティ
 
