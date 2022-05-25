@@ -1,33 +1,48 @@
 # domain for rust
 
-# ドメインモデル
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [domain for rust](#domain-for-rust)
+  - [値オブジェクト](#値オブジェクト)
+    - [値オブジェクトとは？](#値オブジェクトとは)
+    - [実装方針](#実装方針)
+    - [実装](#実装)
+    - [FAQ](#faq)
+      - [**Q. 等価性の定義はどのように行っているの？**](#q-等価性の定義はどのように行っているの)
+      - [**Q. 構造体に文字列を持たせる場合、`String`と`&str`どっちがいいの？**](#q-構造体に文字列を持たせる場合-stringとstrどっちがいいの)
+      - [**Q. なぜ try_from と of の 2 つのインスタンシエートメソッドがあるの？**](#q-なぜ-try_from-と-of-の-2-つのインスタンシエートメソッドがあるの)
+  - [エンティティ](#エンティティ)
+
+<!-- /code_chunk_output -->
 
 ## 値オブジェクト
 
-
 ### 値オブジェクトとは？
-[goでValueObject(値オブジェクト) を実装する](https://tech.isid.co.jp/entry/2021/12/17/go%E3%81%A7ValueObject%28%E5%80%A4%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%29_%E3%82%92%E5%AE%9F%E8%A3%85%E3%81%99%E3%82%8B)より、
+
+[go で ValueObject(値オブジェクト) を実装する](https://tech.isid.co.jp/entry/2021/12/17/go%E3%81%A7ValueObject%28%E5%80%A4%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%29_%E3%82%92%E5%AE%9F%E8%A3%85%E3%81%99%E3%82%8B)より、
 
 > イミュータブルである  
 > 不変条件が定義されており、条件を満たさない値では生成できない  
 > 特定の属性で等価性が定義される  
-> 値だけでなく、自身に属する機能を公開する  
+> 値だけでなく、自身に属する機能を公開する
 
 を定義とします。
 より抽象的な言い方をすると、プリミティブ型では持てない業務の振る舞いを型として表現したものです。
 
 ### 実装方針
 
-`struct`にてフィールド変数を束縛し、`TryFrom`等のtraitや自前の`impl`を用いてメソッドを生やす。
+`struct`にてフィールド変数を束縛し、`TryFrom`等の trait や自前の`impl`を用いてメソッドを生やす。
 
 - イミュータブルである
-  - そもそもRustのオブジェクトは全てイミュータブルであり、値の変更は借用時を除いてできない。
+  - そもそも Rust のオブジェクトは全てイミュータブルであり、値の変更は借用時を除いてできない。
   - `&mut`により借用した場合は値の変更は可能であるが、あくまで参照時のみであり、本体の値は変わらない。
 - 不変条件が定義されており、条件を満たさない値では生成できない
   - `TryFrom`によるバリデーションの実装。
-- 特定の属性で等価性が定義される  
+- 特定の属性で等価性が定義される
   - `PartialEq`や`Eq`による拡張。
-- 値だけでなく、自身に属する機能を公開する  
+- 値だけでなく、自身に属する機能を公開する
   - 計算ロジックや、他の値オブジェクトとの関わり等。
   - 業務的な実装が必要になるため、今回は省略。
 
@@ -35,16 +50,16 @@
 
 `src/domain/mail_address.rs`
 
-- クラシックstructとして`String`から成る`MailAddress`型を定義。
+- クラシック struct として`String`から成る`MailAddress`型を定義。
 - `TryFrom`により、コンストラクタを実装する。
-  - このタイミングでRegexを確認し、`MailAddress`を構築できない場合にはエラーを出力する。
+  - このタイミングで Regex を確認し、`MailAddress`を構築できない場合にはエラーを出力する。
   - それ以外にも、値オブジェクト構築時のバリデート判定はこのタイミングで行う。
   - ここでの`Self`は`MailAddress`。
-- structの各フィールドはmodule外からはprivateであるため、要素の取得用に`String`を拡張した`From`を`MailAddress`ジェネリクスで実装する。
+- struct の各フィールドは module 外からは private であるため、要素の取得用に`String`を拡張した`From`を`MailAddress`ジェネリクスで実装する。
   - ここでの`Self`は`String`。
-  - 複数要素から成る値オブジェクトである場合は、素直にimplにgetter定義する。
+  - 複数要素から成る値オブジェクトである場合は、素直に impl に getter 定義する。
 
-```rs
+```rust
 #[derive(PartialEq, Eq, Clone, PartialOrd, Ord, Debug, Serialize)]
 pub struct MailAddress {
     mail_string: String,
@@ -91,7 +106,7 @@ impl From<MailAddress> for String {
   - `PartialEq`をスーパートレイトとして持ちます。
     - `PartialEq`に加えて何かを実装しているわけではなく、あくまで反射律を満たしませんよという点を実装者に伝えています。
 
-```rs
+```rust
 // https://doc.rust-lang.org/src/core/cmp.rs.html#218-233
 pub trait PartialEq<Rhs: ?Sized = Self> {
     #[must_use]
@@ -121,31 +136,30 @@ pub trait Eq: PartialEq<Self> {
 `MailAddress`は`String`から成るオブジェクトで有り、これは反射率も満たしているため、`Eq`トレイトも付与しています。例えばフィールドに`float`のような反射率を満たさないフィールドが存在する場合、`Eq`の付与はできません。（コンパイルエラーになります）
 
 （参考）同値について  
-離散数学において、推移律・対象律・反射律を満たすものを`同値`と呼びます。ある集合Aに属する(x,y,z)を考えます。
+離散数学において、推移律・対象律・反射律を満たすものを`同値`と呼びます。ある集合 A に属する(x,y,z)を考えます。
 
-- 対象律は、x=yならば、y=xである事を指します。
-- 推移律は、x=yかつy=zならば、z=xである事を指します。
-- 反射律は、全ての要素nにおいて、n=nであることを指します。
+- 対象律は、x=y ならば、y=x である事を指します。
+- 推移律は、x=y かつ y=z ならば、z=x である事を指します。
+- 反射律は、全ての要素 n において、n=n であることを指します。
 
-例えばStringという集合を考えた際に、Stringに(x,y,z)が存在したとします。（※x,y,zはただの記号で有り、同様の値が格納されている可能性も有ります。いわば変数名です。）
+例えば String という集合を考えた際に、String に(x,y,z)が存在したとします。（※x,y,z はただの記号で有り、同様の値が格納されている可能性も有ります。いわば変数名です。）
 
-- 集合内の任意の値、x=yの場合、y=xが満たされるため、対象律は満たされます。
-- 集合内の任意の値、x=yかつy=zの場合、z=xでもあるため、推移律は満たされます。
-- ある要素xについて、x=xです。これは、y,zについても同様のことが言えるため、反射率は満たされます。
+- 集合内の任意の値、x=y の場合、y=x が満たされるため、対象律は満たされます。
+- 集合内の任意の値、x=y かつ y=z の場合、z=x でもあるため、推移律は満たされます。
+- ある要素 x について、x=x です。これは、y,z についても同様のことが言えるため、反射率は満たされます。
 
-例えばfloatの集合を考えた際に、floatに(a,b,c,NaN)が存在したとします。（※a,b,cはただの記号ですが、NaNはNaNを表します。）
-- 集合内の任意の値、任意のa=bの場合、b=aが満たされるため、対象律は満たされます。
-- 集合内の任意の値、a=bかつc=aの場合、a=cでもあるため、推移律は満たされます。
-- a=a,b=b,c=cは満たされますが、要素NaNについては、浮動小数点誤差によりNaN!=NaNです。つまり、すべての要素について同値ではないため、反射律は満たされません。
+例えば float の集合を考えた際に、float に(a,b,c,NaN)が存在したとします。（※a,b,c はただの記号ですが、NaN は NaN を表します。）
 
-NaNは、浮動小数点計算による異常値（数字で表されない値）のことで、例えば`0.0/0.0`や`無限大-無限大`の際に登場します。Rustにおいては、以下で実装されています。
+- 集合内の任意の値、任意の a=b の場合、b=a が満たされるため、対象律は満たされます。
+- 集合内の任意の値、a=b かつ c=a の場合、a=c でもあるため、推移律は満たされます。
+- a=a,b=b,c=c は満たされますが、要素 NaN については、浮動小数点誤差により NaN!=NaN です。つまり、すべての要素について同値ではないため、反射律は満たされません。
+
+NaN は、浮動小数点計算による異常値（数字で表されない値）のことで、例えば`0.0/0.0`や`無限大-無限大`の際に登場します。Rust においては、以下で実装されています。
 
 ```rust
 // https://doc.rust-lang.org/src/core/num/f64.rs.html#421
 pub const NAN: f64 = 0.0_f64 / 0.0_f64;
 ```
-
-
 
 #### **Q. 構造体に文字列を持たせる場合、`String`と`&str`どっちがいいの？**
 
@@ -157,7 +171,7 @@ pub const NAN: f64 = 0.0_f64 / 0.0_f64;
 
 よって、仮に参照型を構造体のフィールドに持たせる場合は、以下のようにライフタイム参照ジェネリクスを用います。これにより、`MailAddress`と`mail_string`のライフタイムが同一の`'a`であることをコンパイラは理解します。
 
-```rs
+```rust
 pub struct MailAddress<'a> {
     mail_string: &'a str,
 }
@@ -165,10 +179,9 @@ pub struct MailAddress<'a> {
 
 しかし以下のように構造体のフィールドの借用元のライフタイムが、構造体本体のライフタイムより短いことはあり得るため、こういった場合利用側でコンパイルエラーにもなり得ます。
 
-- `missing lifetime specifier
-this function's return type contains a borrowed value, but there is no value for it to be borrowed from rustcE0106`
+- `missing lifetime specifier this function's return type contains a borrowed value, but there is no value for it to be borrowed from rustcE0106`
 
-```rs
+```rust
 pub struct Person<'a> {
     name: &'a str,
 }
@@ -185,22 +198,22 @@ fn get_user() -> Person {
 
 よって、逐次値を新規に`clone`してでも`String`で構築すべきです。
 
-[(参考)Rust公式 - 構造体定義のライフタイム注釈](https://doc.rust-jp.rs/book-ja/ch10-03-lifetime-syntax.html#%E6%A7%8B%E9%80%A0%E4%BD%93%E5%AE%9A%E7%BE%A9%E3%81%AE%E3%83%A9%E3%82%A4%E3%83%95%E3%82%BF%E3%82%A4%E3%83%A0%E6%B3%A8%E9%87%88)
+[(参考)Rust 公式 - 構造体定義のライフタイム注釈](https://doc.rust-jp.rs/book-ja/ch10-03-lifetime-syntax.html#%E6%A7%8B%E9%80%A0%E4%BD%93%E5%AE%9A%E7%BE%A9%E3%81%AE%E3%83%A9%E3%82%A4%E3%83%95%E3%82%BF%E3%82%A4%E3%83%A0%E6%B3%A8%E9%87%88)
 
-#### **Q. なぜtry_fromとofの2つのインスタンシエートメソッドがあるの？**
+#### **Q. なぜ try_from と of の 2 つのインスタンシエートメソッドがあるの？**
 
-まずインスタンシエート時のモチベーションとして、以下の2つが有ります。
+まずインスタンシエート時のモチベーションとして、以下の 2 つが有ります。
 
 - `String`で保持する構造体に対して、`&str`でも`String`でも引数として受け入れたい。
 - 失敗する可能性のある型変換は、`trait`に対して明示的に`TryFrom`を実装したい。
   - 特に値オブジェクトの場合は、インスタンシエートに対して条件を付けることが多く、`TryFrom`が適している。
 
-
 上記を満たすために、本来`Into<String>`によるトレイト境界を用いて、以下のような実装がしたいです。
+
 - `mail_string`は`Into<String>`であることで、`try_from`の引数は`String`でも`&str`でも良いです。
 - 構造体を構築するタイミングで`into`を実施し、`&str`の場合は`String`に変換され、`String`の場合は変換は行われません。
 
-```rs
+```rust
 impl<S> TryFrom<S> for MailAddress
 where
     S: Into<String>,
@@ -220,7 +233,7 @@ where
 
 しかし、上記実装は、`core::convert`の`TryFrom`実装と競合します。
 
-```rs
+```rust
 // https://doc.rust-lang.org/beta/src/core/convert/mod.rs.html#598-607
 impl<T, U> const TryFrom<U> for T
 where
@@ -236,10 +249,9 @@ where
 
 よって、`of`により`TryFrom`をラップすることで、`&str`でも`String`でも受け取ることができ、かつバリデーション判定を行うコンストラクタを構築しています。
 
-
 （参考）`into()`により、`&str`が`String`に変換可能な理由は、下記が`&str`に対して実装されているためです。型推論が可能な場合のみ`into`は上記の動作となります。ここあまり理解できてません。
 
-```rs
+```rust
 // https://doc.rust-lang.org/src/core/convert/mod.rs.html#539-552
 
 impl<T, U> const Into<U> for T
@@ -264,7 +276,6 @@ impl<T> const From<T> for T {
     }
 }
 ```
-
 
 ## エンティティ
 
