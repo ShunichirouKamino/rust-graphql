@@ -438,11 +438,9 @@ pub trait Error: Debug + Display {
 
 ## エンティティ
 
-エンティティ
-
 `src/domain/entity/user.rs`
 
-```rs
+```rust
 use crate::domain::mail_address::MailAddress;
 
 /// Entities consist of classic structures.
@@ -457,6 +455,4 @@ impl User {
     pub fn of(email: MailAddress) -> Self {
         Self { email }
     }
-
-
 ```
