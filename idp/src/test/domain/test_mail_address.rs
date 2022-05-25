@@ -29,4 +29,26 @@ mod tests {
         let result = MailAddress::try_from(mail_string);
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_mail_ng_from_str() {
+        let mail_string = "test.test@@@gmail.com";
+        let result = MailAddress::of(mail_string);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_equals() {
+        let mail_string_1 = "fuga.test@gmail.com";
+        let mail_string_2 = "fuga.test@gmail.com";
+        let mail_string_3 = "hoge.test@gmail.com";
+
+        let mail_1 = MailAddress::of(mail_string_1).unwrap();
+        let mail_2 = MailAddress::of(mail_string_2).unwrap();
+        let mail_3 = MailAddress::of(mail_string_3).unwrap();
+
+        assert_eq!(mail_1, mail_2);
+        assert_ne!(mail_2, mail_3);
+        assert_ne!(mail_1, mail_3);
+    }
 }
