@@ -80,7 +80,74 @@ impl From<MailAddress> for String {
 
 ### FAQ
 
-#### **・構造体に文字列を持たせる場合、`String`と`&str`どっちがいいの？**
+#### **Q. 等価性の定義はどのように行っているの？**
+
+`#[derive]`属性により、`PartialEq`トレイト及び`Eq`トレイトを追加しています。
+
+- `PartialEq`
+  - 同値の中でも推移律と対象律を満たす場合に付与します。
+- `Eq`
+  - `PartialEq`に加えて反射律を満たす場合に付与します。
+  - `PartialEq`をスーパートレイトとして持ちます。
+    - `PartialEq`に加えて何かを実装しているわけではなく、あくまで反射律を満たしませんよという点を実装者に伝えています。
+
+```rs
+// https://doc.rust-lang.org/src/core/cmp.rs.html#218-233
+pub trait PartialEq<Rhs: ?Sized = Self> {
+    #[must_use]
+    #[stable(feature = "rust1", since = "1.0.0")]
+    fn eq(&self, other: &Rhs) -> bool;
+
+    /// This method tests for `!=`.
+    #[inline]
+    #[must_use]
+    #[stable(feature = "rust1", since = "1.0.0")]
+    #[default_method_body_is_const]
+    fn ne(&self, other: &Rhs) -> bool {
+        !self.eq(other)
+    }
+}
+
+// https://doc.rust-lang.org/src/core/cmp.rs.html#286-299
+pub trait Eq: PartialEq<Self> {
+    #[doc(hidden)]
+    #[no_coverage] // rust-lang/rust#84605
+    #[inline]
+    #[stable(feature = "rust1", since = "1.0.0")]
+    fn assert_receiver_is_total_eq(&self) {}
+}
+```
+
+`MailAddress`は`String`から成るオブジェクトで有り、これは反射率も満たしているため、`Eq`トレイトも付与しています。例えばフィールドに`float`のような反射率を満たさないフィールドが存在する場合、`Eq`の付与はできません。（コンパイルエラーになります）
+
+（参考）同値について  
+離散数学において、推移律・対象律・反射律を満たすものを`同値`と呼びます。ある集合Aに属する(x,y,z)を考えます。
+
+- 対象律は、x=yならば、y=xである事を指します。
+- 推移律は、x=yかつy=zならば、z=xである事を指します。
+- 反射律は、全ての要素nにおいて、n=nであることを指します。
+
+例えばStringという集合を考えた際に、Stringに(x,y,z)が存在したとします。（※x,y,zはただの記号で有り、同様の値が格納されている可能性も有ります。いわば変数名です。）
+
+- 集合内の任意の値、x=yの場合、y=xが満たされるため、対象律は満たされます。
+- 集合内の任意の値、x=yかつy=zの場合、z=xでもあるため、推移律は満たされます。
+- ある要素xについて、x=xです。これは、y,zについても同様のことが言えるため、反射率は満たされます。
+
+例えばfloatの集合を考えた際に、floatに(a,b,c,NaN)が存在したとします。（※a,b,cはただの記号ですが、NaNはNaNを表します。）
+- 集合内の任意の値、任意のa=bの場合、b=aが満たされるため、対象律は満たされます。
+- 集合内の任意の値、a=bかつc=aの場合、a=cでもあるため、推移律は満たされます。
+- a=a,b=b,c=cは満たされますが、要素NaNについては、浮動小数点誤差によりNaN!=NaNです。つまり、すべての要素について同値ではないため、反射律は満たされません。
+
+NaNは、浮動小数点計算による異常値（数字で表されない値）のことで、例えば`0.0/0.0`や`無限大-無限大`の際に登場します。Rustにおいては、以下で実装されています。
+
+```rust
+// https://doc.rust-lang.org/src/core/num/f64.rs.html#421
+pub const NAN: f64 = 0.0_f64 / 0.0_f64;
+```
+
+
+
+#### **Q. 構造体に文字列を持たせる場合、`String`と`&str`どっちがいいの？**
 
 まず参照型であるため、構造体のフィールドに`&str`をそのまま用いることはできません。これは、以下のような利用からコンパイルエラーになります。
 
@@ -120,7 +187,7 @@ fn get_user() -> Person {
 
 [(参考)Rust公式 - 構造体定義のライフタイム注釈](https://doc.rust-jp.rs/book-ja/ch10-03-lifetime-syntax.html#%E6%A7%8B%E9%80%A0%E4%BD%93%E5%AE%9A%E7%BE%A9%E3%81%AE%E3%83%A9%E3%82%A4%E3%83%95%E3%82%BF%E3%82%A4%E3%83%A0%E6%B3%A8%E9%87%88)
 
-#### **・なぜtry_fromとofの2つのインスタンシエートメソッドがあるの？**
+#### **Q. なぜtry_fromとofの2つのインスタンシエートメソッドがあるの？**
 
 まずインスタンシエート時のモチベーションとして、以下の2つが有ります。
 
@@ -151,7 +218,26 @@ where
 }
 ```
 
-（参考）下記が`&str`に対して実装されているため、型推論が可能な場合のみ`into`は上記の動作となります。ここあまり理解できてません。
+しかし、上記実装は、`core::convert`の`TryFrom`実装と競合します。
+
+```rs
+// https://doc.rust-lang.org/beta/src/core/convert/mod.rs.html#598-607
+impl<T, U> const TryFrom<U> for T
+where
+    U: ~const Into<T>,
+{
+    type Error = Infallible;
+
+    fn try_from(value: U) -> Result<Self, Self::Error> {
+        Ok(U::into(value))
+    }
+}
+```
+
+よって、`of`により`TryFrom`をラップすることで、`&str`でも`String`でも受け取ることができ、かつバリデーション判定を行うコンストラクタを構築しています。
+
+
+（参考）`into()`により、`&str`が`String`に変換可能な理由は、下記が`&str`に対して実装されているためです。型推論が可能な場合のみ`into`は上記の動作となります。ここあまり理解できてません。
 
 ```rs
 // https://doc.rust-lang.org/src/core/convert/mod.rs.html#539-552
@@ -178,23 +264,6 @@ impl<T> const From<T> for T {
     }
 }
 ```
-しかし、上記実装は、`core::convert`の`TryFrom`実装と競合します。
-
-```rs
-// https://doc.rust-lang.org/beta/src/core/convert/mod.rs.html#598-607
-impl<T, U> const TryFrom<U> for T
-where
-    U: ~const Into<T>,
-{
-    type Error = Infallible;
-
-    fn try_from(value: U) -> Result<Self, Self::Error> {
-        Ok(U::into(value))
-    }
-}
-```
-
-よって、`of`により`TryFrom`をラップすることで、`&str`でも`String`でも受け取ることができ、かつバリデーション判定を行うコンストラクタを構築できます。
 
 
 ## エンティティ
