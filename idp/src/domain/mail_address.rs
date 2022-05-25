@@ -15,7 +15,7 @@ pub struct MailAddress {
 impl TryFrom<String> for MailAddress {
     type Error = MyError;
 
-    fn try_from(mail_string: String) -> Result<Self, Self::Error> {
+    fn try_from(mail_string: String) -> my_error::Result<Self> {
         let regex = Regex::new(r#"^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$"#).unwrap();
         if regex.is_match(mail_string.as_str()) {
             Ok(Self { mail_string })
@@ -26,7 +26,7 @@ impl TryFrom<String> for MailAddress {
 }
 
 impl MailAddress {
-    pub fn of<T: Into<String>>(mail_string: T) -> Result<Self, MyError> {
+    pub fn of<T: Into<String>>(mail_string: T) -> my_error::Result<Self> {
         MailAddress::try_from(mail_string.into())
     }
 }

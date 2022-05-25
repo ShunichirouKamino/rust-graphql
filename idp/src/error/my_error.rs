@@ -7,17 +7,7 @@ pub enum MyError {
     InvalidValue,
 }
 
-impl MyError {}
-
-impl Error for MyError {
-    fn description(&self) -> &str {
-        match *self {
-            MyError::InvalidValue => "Invalid Value Error",
-            MyError::Decode => "Decode Error",
-            MyError::Encode => "Encode Error",
-        }
-    }
-}
+impl Error for MyError {}
 
 pub type Result<T, E = MyError> = std::result::Result<T, E>;
 
